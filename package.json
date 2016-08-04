@@ -2,7 +2,7 @@
   "name": "node-xcpd-client",
   "version": "0.0.1",
   "description": "Counterparty Server API client",
-  "main": "index.js",
+  "main": "index",
   "scripts": {
     "build": "./node_modules/babel-cli/bin/babel.js src/lib --out-dir lib && ./node_modules/babel-cli/bin/babel.js src/bin --out-dir bin",
     "build:dist": "rm -rf ./lib/* ./bin/* && npm run build",

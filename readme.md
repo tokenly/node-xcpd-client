@@ -5,14 +5,15 @@
 ```node
 var XCPDClient = require('node-xcpd-client');
 
-var client = XCPDCLient.connect({
+var client = XCPDClient.connect({
     host:     'localhost',
     port:     4000,
     username: 'rpc',
     password: 'MyP@ssW0Rd'
 });
 
-client.getBalances(address).then((balances)=>{
+var address = '1AAAA1111xxxxxxxxxxxxxxxxxxy43CZ9j';
+client.getBalances(address).then(function(balances) {
     console.log('balances', balances);
 
     // {
@@ -20,7 +21,7 @@ client.getBalances(address).then((balances)=>{
     //      LTBCOIN: 12345647890
     // }
 
-}, (err)=>{
+}, function (err) {
     console.error('there was an error: ', err);
 });
 ```
