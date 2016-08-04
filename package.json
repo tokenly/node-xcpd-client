@@ -1,0 +1,41 @@
+{
+  "name": "node-xcpd-client",
+  "version": "0.0.1",
+  "description": "Counterparty Server API client",
+  "main": "index.js",
+  "scripts": {
+    "build": "./node_modules/babel-cli/bin/babel.js src/lib --out-dir lib && ./node_modules/babel-cli/bin/babel.js src/bin --out-dir bin",
+    "build:dist": "rm -rf ./lib/* ./bin/* && npm run build",
+    "test": "mocha --compilers js:babel-core/register ./test/*.js",
+    "test:watch": "mocha --compilers js:babel-core/register ./test/*.js --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tokenly/node-xcpd-client.git"
+  },
+  "keywords": [
+    "counterparty",
+    "client",
+    "API"
+  ],
+  "engines": {
+    "node": ">=6"
+  },
+  "author": "Devon Weller <devon@tokenly.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tokenly/node-xcpd-client/issues"
+  },
+  "homepage": "https://github.com/tokenly/node-xcpd-client#readme",
+  "dependencies": {
+    "jayson": "^2.0.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-stage-1": "^6.5.0",
+    "mocha": "^3.0.0",
+    "should": "^10.0.0",
+    "sinon": "^1.17.5"
+  }
+}
