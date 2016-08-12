@@ -112,18 +112,25 @@ XCPDClient.connect = (opts)=>{
     //         "quantityFloat": 1
     //     }
     // ]
-    xcpdClient.findTransactionsById = (transactionIds)=>{
+    xcpdClient.findTransactionsById = (transactionIds, address=null)=>{
         if (transactionIds.length > 100) {
             throw new Error("Limited to 100 transaction IDs")
         }
         let query = {
-            filters: {event: {op: "IN", value: transactionIds}},
+            filters: {
+                event: {op: "IN", value: transactionIds}
+            },
         };
+
+        // also filter by address
+        if (address != null) {
+            query.filters.address = address
+        }
+
         return Promise.all([
             xcpdClient.call('get_credits', xcpdClient.buildQuery(query)),
             xcpdClient.call('get_debits', xcpdClient.buildQuery(query))            
         ]).then((creditsAndDebits)=>{
-            // console.log('creditsAndDebits', creditsAndDebits);
             let [credits, debits] = creditsAndDebits;
 
             let promises = []

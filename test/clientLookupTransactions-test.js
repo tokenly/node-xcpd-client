@@ -39,7 +39,7 @@ describe('The xcpd client', () => {
             }
         }));
 
-        client.findTransactionsById(['aaaaa','bbbbb','ccccc'])
+        client.findTransactionsById(['aaaaa','bbbbb','ccccc'], '1AAAA1111xxxxxxxxxxxxxxxxxxy43CZ9j')
 
         .then((transactionEntries)=>{
             // console.log('transactionEntries '+JSON.stringify(transactionEntries, null, 4));
