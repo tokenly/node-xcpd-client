@@ -86,18 +86,67 @@ XCPDClient.connect = (opts)=>{
             for (let entry of result) {
                 isDivisiblePromises.push(
                     xcpdClient.isDivisible(entry.asset).then((isDivisible)=>{
-                        return {
+                        return applyDivisibleProperties(isDivisible, {
                             asset:         entry.asset,
                             quantity:      entry.quantity,
-                            divisible:     isDivisible,
-                            quantityFloat: (isDivisible ? (entry.quantity / SATOSHI) : entry.quantity)
-                        }
+                        })
                     })
                 )
             }
 
             return Promise.all(isDivisiblePromises);
         });
+    }
+
+    // returns an array of transactions from the given transaction IDs
+    // [
+    //     {
+    //         "asset": "XAAACOIN",
+    //         "quantity": 100000000,
+    //         "calling_function": "send",
+    //         "block_index": 424000,
+    //         "address": "1AAAA1111xxxxxxxxxxxxxxxxxxy43CZ9j",
+    //         "event": "aaaaa",
+    //         "direction": "credit",
+    //         "divisible": true,
+    //         "quantityFloat": 1
+    //     }
+    // ]
+    xcpdClient.findTransactionsById = (transactionIds)=>{
+        if (transactionIds.length > 100) {
+            throw new Error("Limited to 100 transaction IDs")
+        }
+        let query = {
+            filters: {event: {op: "IN", value: transactionIds}},
+        };
+        return Promise.all([
+            xcpdClient.call('get_credits', xcpdClient.buildQuery(query)),
+            xcpdClient.call('get_debits', xcpdClient.buildQuery(query))            
+        ]).then((creditsAndDebits)=>{
+            // console.log('creditsAndDebits', creditsAndDebits);
+            let [credits, debits] = creditsAndDebits;
+
+            let promises = []
+            for (let credit of credits) {
+                credit.direction = 'credit'
+                promises.push(
+                    xcpdClient.isDivisible(credit.asset).then((isDivisible)=>{
+                        return applyDivisibleProperties(isDivisible, credit);
+                    })
+                );
+            }
+            for (let debit of debits) {
+                debit.direction = 'debit'
+                promises.push(
+                    xcpdClient.isDivisible(debit.asset).then((isDivisible)=>{
+                        return applyDivisibleProperties(isDivisible, debit);
+                    })
+                );
+            }
+
+            return Promise.all(promises)
+        });
+
     }
 
     xcpdClient.buildQuery = (querySpec)=>{
@@ -110,7 +159,7 @@ XCPDClient.connect = (opts)=>{
                     let spec = querySpec.filters[field]
                     let value;
                     let op = '==';
-                    if (field !== null && typeof field === 'object') {
+                    if (spec !== null && typeof spec === 'object') {
                         op = spec.op;
                         value = spec.value;
 
@@ -128,7 +177,7 @@ XCPDClient.connect = (opts)=>{
         }
         query.filters = filters;
 
-        for(let allowedKey of ['filterop', 'order_by', 'order_dir']) {
+        for(let allowedKey of ['filterop', 'order_by', 'order_dir', 'limit', 'offset']) {
             if (querySpec[allowedKey] != null) {
                 query[allowedKey] = querySpec[allowedKey];
             }
@@ -168,6 +217,14 @@ XCPDClient.connect = (opts)=>{
             }
             return assetInfo.divisible;
         })
+    }
+
+    function applyDivisibleProperties(isDivisible, entry) {
+        return {
+            ...entry,
+            divisible:     isDivisible,
+            quantityFloat: (isDivisible ? (entry.quantity / SATOSHI) : entry.quantity)
+        }
     }
 
     // ------------------------------------------------------------------------

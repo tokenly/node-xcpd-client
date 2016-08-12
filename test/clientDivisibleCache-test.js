@@ -6,7 +6,7 @@ import testHelpers from './helpers';
 
 describe('The xcpd divisible cache', () => {
 
-    it('works for divisible asset', (done) => {
+    it('works for divisible assets', (done) => {
         let TEST_DB_FILE = __dirname+'/../data/test.db';
         let testAssetName = 'FOOCOIN'+(Date.now());
 
@@ -58,7 +58,7 @@ describe('The xcpd divisible cache', () => {
         });
     });
 
-    it('works for indivisible asset', (done) => {
+    it('works for indivisible assets', (done) => {
         let TEST_DB_FILE = __dirname+'/../data/test.db';
         let testAssetName = 'FOOCOIN'+(Date.now());
 
