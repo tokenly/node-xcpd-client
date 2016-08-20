@@ -156,6 +156,64 @@ XCPDClient.connect = (opts)=>{
 
     }
 
+
+    // returns an array of matched mempool transactions from the given transaction IDs
+    // [
+    //    {
+    //        "asset": "BITCRYSTALS",
+    //        "quantity": 36772088955,
+    //        "quantityFloat": 367.72088955,
+    //        "source": "1EdBW9ebNqfZtCqEfstLnaAJgGNGmPNniS",
+    //        "destination": "1AeqgtHedfA2yVXH6GiKLS2JGkfWfgyTC6",
+    //        "tx_hash": "f6eeb2364ac0f2f96bb0021980c384d990d0c7b7fb208d4ddc012ca778c89fa2",
+    //        "timestamp": 1471702974,
+    //        "category": "sends",
+    //        "divisible": true
+    //    }
+    // ]
+    xcpdClient.findMempoolTransactionsById = (transactionIds=null, address=null)=>{
+        if (transactionIds.length > 100) {
+            throw new Error("Limited to 100 transaction IDs")
+        }
+
+        let query = {};
+        if (transactionIds != null) {
+            query = {
+                filters: {
+                    tx_hash: {op: "IN", value: transactionIds}
+                },
+            };
+        }
+
+        return xcpdClient.call('get_mempool', xcpdClient.buildQuery(query))
+        .then((mempool_entries)=>{
+
+            let mempoolTxs = [];
+            let isDivisiblePromises = [];
+            for (let mempool_entry of mempool_entries) {
+                let binding = JSON.parse(mempool_entry.bindings)
+
+                // filter by address if necessary
+                if (address != null) {
+                    let found = false;
+                    if (binding.source == address || binding.destination == address) {
+                        found = true;
+                    }
+                    if (!found) { continue; }
+                }
+
+                binding.category = mempool_entry.category
+                binding.timestamp = mempool_entry.timestamp
+                binding.mempool = true
+
+                isDivisiblePromises.push(buildDivisiblePropertiesPromise(binding.asset, binding))
+            }
+
+            return Promise.all(isDivisiblePromises)
+        });
+
+    }
+
     xcpdClient.buildQuery = (querySpec)=>{
         let query = {};
 
@@ -215,6 +273,17 @@ XCPDClient.connect = (opts)=>{
     };
 
     // ------------------------------------------------------------------------
+
+    function buildDivisiblePropertiesPromise(asset, properties) {
+        if (asset == null) {
+            return new Promise((resolve)=>{ resolve(properties); });
+        } else {
+            return xcpdClient.isDivisible(asset).then((isDivisible)=>{
+                return applyDivisibleProperties(isDivisible, properties)
+            })
+        }
+
+    }
     
     function buildIsDivisible(assetName) {
         return xcpdClient.getAssetInfo(assetName)
