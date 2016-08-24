@@ -31,8 +31,16 @@ XCPDClient.connect = (opts)=>{
     
     let xcpdClient = {};
     
-    xcpdClient.getAssetInfo = (assetName)=>{
-        return xcpdClient.call('get_asset_info', {assets: [assetName]}).then((assets)=>{
+    // for a single asset name, returns the asset info
+    //   for multiple asset names, returns an array of asset information
+    xcpdClient.getAssetInfo = (assetNameOrNames)=>{
+        if (Array.isArray(assetNameOrNames)) {
+            return xcpdClient.call('get_asset_info', {assets: assetNameOrNames}).then((assets)=>{
+                return assets;
+            });
+        }
+
+        return xcpdClient.call('get_asset_info', {assets: [assetNameOrNames]}).then((assets)=>{
             return assets[0];
         });
     }
@@ -168,6 +176,7 @@ XCPDClient.connect = (opts)=>{
     //        "tx_hash": "f6eeb2364ac0f2f96bb0021980c384d990d0c7b7fb208d4ddc012ca778c89fa2",
     //        "timestamp": 1471702974,
     //        "category": "sends",
+    //        "mempool": true,
     //        "divisible": true
     //    }
     // ]

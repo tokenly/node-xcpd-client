@@ -16,10 +16,20 @@ var address = '1AAAA1111xxxxxxxxxxxxxxxxxxy43CZ9j';
 client.getBalances(address).then(function(balances) {
     console.log('balances', balances);
 
-    // {
-    //      TOKENLY: 900000000,
-    //      LTBCOIN: 12345647890
-    // }
+    // [
+    //     {
+    //         asset: 'TOKENLY',
+    //         quantity: 900000000,
+    //         divisible: true,
+    //         quantityFloat: 9.0
+    //     },
+    //     {
+    //         asset: 'INDIVISIBLETKN',
+    //         quantity: 16,
+    //         divisible: false,
+    //         quantityFloat: 16.0
+    //     }
+    // ]
 
 }, function (err) {
     console.error('there was an error: ', err);

@@ -9,6 +9,12 @@ describe('The xcpd client', () => {
         client.getAssetInfo('TOKENLY');
         sinon.assert.calledWith(stub, 'get_asset_info', {assets: ['TOKENLY']});
     });
+    it('should return multiple asset info for get_asset_info', () => {
+        let client = XCPDClient.connect();
+        let stub = sinon.stub(client, 'call', emptyPromise);
+        client.getAssetInfo(['TOKENLY','FOOCOINTWO']);
+        sinon.assert.calledWith(stub, 'get_asset_info', {assets: ['TOKENLY','FOOCOINTWO']});
+    });
     it('should call get_balances by address', () => {
         let client = XCPDClient.connect();
         let stub = sinon.stub(client, 'call', emptyPromise);
