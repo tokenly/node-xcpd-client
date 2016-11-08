@@ -198,7 +198,7 @@ XCPDClient.connect = (opts)=>{
         .then((mempool_entries)=>{
 
             let mempoolTxs = [];
-            let isDivisiblePromises = [];
+            let promises = [];
             for (let mempool_entry of mempool_entries) {
                 let binding = JSON.parse(mempool_entry.bindings)
 
@@ -215,10 +215,10 @@ XCPDClient.connect = (opts)=>{
                 binding.timestamp = mempool_entry.timestamp
                 binding.mempool = true
 
-                isDivisiblePromises.push(buildDivisiblePropertiesPromise(binding.asset, binding))
+                promises.push(buildMempoolPropertiesPromise(binding.asset, binding))
             }
 
-            return Promise.all(isDivisiblePromises)
+            return Promise.all(promises)
         });
 
     }
@@ -283,14 +283,26 @@ XCPDClient.connect = (opts)=>{
 
     // ------------------------------------------------------------------------
 
-    function buildDivisiblePropertiesPromise(asset, properties) {
-        if (asset == null) {
-            return new Promise((resolve)=>{ resolve(properties); });
-        } else {
-            return xcpdClient.isDivisible(asset).then((isDivisible)=>{
-                return applyDivisibleProperties(isDivisible, properties)
-            })
-        }
+    function buildMempoolPropertiesPromise(asset, properties) {
+        return new Promise((resolve)=>{
+            if (asset == null) {
+                resolve(properties);
+                return;
+            } else {
+                if (properties.divisible != null) {
+                    // use the properties.divisible
+                    resolve(applyDivisibleProperties(properties.divisible, properties));
+                    return;
+                } else {
+                    // try to get divisible properties for a previously issued asset
+                    xcpdClient.isDivisible(asset).then((isDivisible)=>{
+                        resolve(applyDivisibleProperties(isDivisible, properties))
+                        return;
+                    });
+                    return;
+                }
+            }
+        });
 
     }
     

@@ -1,6 +1,6 @@
 {
   "name": "node-xcpd-client",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Counterparty Server API client",
   "main": "index",
   "scripts": {
