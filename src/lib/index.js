@@ -26,6 +26,7 @@ XCPDClient.connect = (opts)=>{
         useDivisibleCache = true
         divisibleCache = assetCache.connect(clientOpts.cacheFile)
     }
+    // console.log('useDivisibleCache', useDivisibleCache);
 
     // ------------------------------------------------------------------------
     
@@ -45,6 +46,18 @@ XCPDClient.connect = (opts)=>{
         });
     }
 
+    xcpdClient.getLastIssuance = (assetName)=>{
+        let query = {
+            filters: {asset: assetName},
+            order_by: "block_index",
+            order_dir: "DESC",
+            limit: 1
+        }
+        return xcpdClient.call('get_issuances', xcpdClient.buildQuery(query)).then((result)=>{
+            return result ? result[0] : {}
+        });
+    }
+
     // returns a Promise with isDivisible
     xcpdClient.isDivisible = (assetName)=>{
         if (!useDivisibleCache) {
@@ -56,6 +69,7 @@ XCPDClient.connect = (opts)=>{
             if (isDivisible === null) {
                 return buildIsDivisible(assetName)
                 .then((isDivisible)=>{
+                    // console.log('caching assetName='+assetName+' isDivisible=',isDivisible);
                     divisibleCache.put(assetName, {divisible: isDivisible})
                     return isDivisible
                 })
@@ -307,7 +321,8 @@ XCPDClient.connect = (opts)=>{
     }
     
     function buildIsDivisible(assetName) {
-        return xcpdClient.getAssetInfo(assetName)
+        // console.log('BEGIN buildIsDivisible', assetName);
+        return xcpdClient.getLastIssuance(assetName)
         .then((assetInfo)=>{
             if (assetInfo == null) {
                 return null;
@@ -315,6 +330,8 @@ XCPDClient.connect = (opts)=>{
             return assetInfo.divisible;
         })
     }
+
+
 
     function applyDivisibleProperties(isDivisible, entry) {
         return {
